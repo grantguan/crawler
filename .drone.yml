@@ -1,28 +1,16 @@
-kind: pipeline
-type: docker
-name: amd64
-
-platform:
-  arch: amd64
-
-steps:
-- name: build
-  image: golang
-  commands:
-  - go build
-  - go test
-
 ---
 kind: pipeline
 type: docker
-name: arm
-
-platform:
-  arch: arm64
+name: default
 
 steps:
-- name: build
-  image: golang
-  commands:
-  - go build
-  - go test
+  - name: build
+    image: golang:1.16
+    commands:
+      - go build
+    when:
+      event:
+        - push
+        - pull_request
+      include:
+        - main.go
