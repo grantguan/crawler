@@ -1,9 +1,45 @@
-kind: pipeline # 定义一个管道
-type: docker # 当前管道的类型
-name: test # 当前管道的名称
-steps: # 定义管道的执行步骤
-  - name: test # 步骤名称
-    image: node:latest # 当前步骤使用的镜像
-    commands: # 当前步骤执行的命令
-      - echo 测试drone执行
+# kind: pipeline # 定义一个管道
+# type: docker # 当前管道的类型
+# name: test # 当前管道的名称
+# steps: # 定义管道的执行步骤
+#   - name: test # 步骤名称
+#     image: node:latest # 当前步骤使用的镜像
+#     commands: # 当前步骤执行的命令
+#       - echo 测试drone执行
 
+kind: pipeline
+type: docker
+name: house-pipeline
+
+steps:
+  - name: build image
+    image: maven:3-jdk-11
+    volumes:
+      - name: maven-cache
+        path: /root/.m2/repository
+      - name: maven-build
+        path: /app/build
+    commands:
+      - mvn install -DskipTests=true -Dmaven.javadoc.skip=true
+      - mv -f /drone/src/target/*.jar /app/build/house.jar
+
+  - name: build-start
+    image: appleboy/drone-ssh
+    settings:
+      host: 192.168.50.228
+      username: cl
+      password:
+        from_secret: ssh_password
+      port: 22
+      command_timeout: 5m
+      script:
+        - cd /home/cl/maven-build
+        - chmod +x run.sh
+        - sh run.sh
+volumes:
+  - name: maven-cache
+    host:
+      path: /home/cl/repository
+  - name: maven-build
+    host:
+      path: /home/cl/maven-build
