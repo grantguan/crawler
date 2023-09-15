@@ -3,6 +3,24 @@ type: docker
 name: docker-compose-example
 
 steps:
+  - name: setup-postgres
+    image: postgres:11
+    environment:
+      POSTGRES_DB: dev_test
+      POSTGRES_USER: testRoot
+      POSTGRES_PASSWORD: testRoot
+    ports:
+      - 5432
+    commands:
+      - sleep 5 # Give PostgreSQL some time to start
+
+  - name: setup-redis
+    image: redis:7.2.0
+    ports:
+      - 6379
+    commands:
+      - sleep 5 # Give Redis some time to start
+
   - name: integration-test
     image: golang:1.20.6
     commands:
