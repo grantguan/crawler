@@ -27,3 +27,6 @@ steps:
       - docker run -d --name postgres -e POSTGRES_DB=dev_test -e POSTGRES_USER=testRoot -e POSTGRES_PASSWORD=testRoot postgres:11 -p 5432:5432
       - docker run -d --name redis -p 6379:6379 redis:7.2.0
       - docker run --link postgres:postgre --link redis:redis --name my-golang-container -v $(pwd):/go/src/app -w /go/src/app golang:1.20.6 go test ./integration/... -ci=1 -v count=1
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
