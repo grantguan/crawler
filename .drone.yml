@@ -9,37 +9,11 @@
 
 kind: pipeline
 type: docker
-name: house-pipeline
+name: test-pipeline
 
 steps:
-  - name: build image
-    image: maven:3-jdk-11
-    volumes:
-      - name: maven-cache
-        path: /root/.m2/repository
-      - name: maven-build
-        path: /app/build
+  - name: test-docker 
+    image: docker
     commands:
-      - mvn install -DskipTests=true -Dmaven.javadoc.skip=true
-      - mv -f /drone/src/target/*.jar /app/build/house.jar
-
-  - name: build-start
-    image: appleboy/drone-ssh
-    settings:
-      host: 192.168.50.228
-      username: cl
-      password:
-        from_secret: ssh_password
-      port: 22
-      command_timeout: 5m
-      script:
-        - cd /home/cl/maven-build
-        - chmod +x run.sh
-        - sh run.sh
-volumes:
-  - name: maven-cache
-    host:
-      path: /home/cl/repository
-  - name: maven-build
-    host:
-      path: /home/cl/maven-build
+      - docker run -d --name postgres -e POSTGRES_DB=dev_test -e POSTGRES_USER=testRoot -e POSTGRES_PASSWORD=testRoot postgres:11
+      - echo 测试drone执行
