@@ -19,3 +19,4 @@ steps:
     - docker run -d --name postgres -e POSTGRES_DB=dev_test -e POSTGRES_USER=testRoot -e POSTGRES_PASSWORD=testRoot postgres:11
     - echo 测试drone执行
 
+
