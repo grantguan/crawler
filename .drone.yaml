@@ -5,6 +5,8 @@ name: docker-compose-example
 steps:
   - name: start
     image: docker/compose:latest
+    environment:
+      DOCKER_HOST: tcp://docker:2375 
     commands:
       - docker-compose --version
       - docker-compose -f ./docker-compose.yml up -d
