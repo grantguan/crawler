@@ -2,10 +2,6 @@ kind: pipeline
 name: docker-compose-example
 
 steps:
-  - name: docker-compose
-    depends_on:
-      - start
-      - stop
 
   - name: start
     image: docker/compose:latest
