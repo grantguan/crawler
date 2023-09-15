@@ -1,108 +1,77 @@
+# kind: pipeline
+# type: docker
+# name: default
+
+# platform:
+#   os: linux
+#   arch: amd64
+
+# environment:
+#   GIT_TAG: ''
+#   PROJECT: 'live4-data-center-service'
+#   IMAGE_NAME: 'live4-data-center'
+
+# trigger:
+#   branch:
+#     exclude:
+#       - main
+
+# steps:
+
+#   - name: run-docker-compose
+#     image: docker/compose:latest
+#     commands:
+#       - docker-compose up -d
+#     when:
+#       event:
+#         - push
+#         - pull_request
+
+#   - name: run-tests
+#     image: golang:1.20.6
+#     environment:
+#       POSTGRES_HOST: localhost
+#       POSTGRES_PORT: 5432
+#       POSTGRES_DB: dev_test
+#       POSTGRES_USER: testRoot
+#       POSTGRES_PASSWORD: testRoot
+#       REDIS_HOST: localhost
+#       REDIS_PORT: 6379
+#     commands:
+#       - go test ./integration/... -ci=1 -v count=1
+ 
+
+#   - name: stop-docker-compose
+#     image: docker/compose:latest
+#     commands:
+#       - docker-compose down
+#     when:
+#       event:
+#         - push
+#         - pull_request
+
 kind: pipeline
 type: docker
 name: default
 
-platform:
-  os: linux
-  arch: amd64
-
-environment:
-  GIT_TAG: ''
-  PROJECT: 'live4-data-center-service'
-  IMAGE_NAME: 'live4-data-center'
-
-trigger:
-  branch:
-    exclude:
-      - main
-
 steps:
-  - name: checkout
-    image: alpine/git
-    commands:
-      - git clone --recursive https://github.com/bobiMedia/live4-data-center-service.git .
-      - GIT_TAG=$(git rev-parse --short HEAD)
-    when:
-      event:
-        exclude:
-          - push
+- name: backend
+  image: golang
+  commands:
+  - go build
+  - go test
 
-  - name: build
-    image: golang:1.20.6
-    commands:
-      - apt-get update && apt-get -y install protobuf-compiler
-      - make init
-      - make all
+- name: frontend
+  image: node
+  commands:
+  - npm install
+  - npm test
 
-  - name: unit-test
-    image: golang:1.20.6
-    commands:
-      - go test ./internal/... -v count=1
-
-  # - name: integration-test
-  #   depends_on:
-  #     - setup-postgres
-  #     - setup-redis
-  #     - run-tests
-
-  - name: setup-postgres
-    image: postgres:11
-    environment:
-      POSTGRES_DB: dev_test
-      POSTGRES_USER: testRoot
-      POSTGRES_PASSWORD: testRoot
-    ports:
-      - 5432
-    commands:
-      - sleep 5 # Give PostgreSQL some time to start
-
-  - name: setup-redis
-    image: redis:7.2.0
-    ports:
-      - 6379
-    commands:
-      - sleep 5 # Give Redis some time to start
-
-  - name: run-tests
-    image: golang:1.20.6
-    environment:
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: dev_test
-      POSTGRES_USER: testRoot
-      POSTGRES_PASSWORD: testRoot
-      REDIS_HOST: localhost
-      REDIS_PORT: 6379
-    commands:
-      - go test ./integration/... -ci=1 -v count=1
-
-  # - name: integration-test
-  #   image: golang:1.20.6
-  #   commands:
-  #     - docker run -d --name postgres -e POSTGRES_DB=dev_test -e POSTGRES_USER=testRoot -e POSTGRES_PASSWORD=testRoot postgres:11 -p 5432:5432
-  #     - docker run -d --name redis -p 6379:6379 redis:7.2.0
-  #     - docker run --link postgres:postgre --link redis:redis --name my-golang-container -v $(pwd):/go/src/app -w /go/src/app golang:1.20.6 go test ./integration/... -ci=1 -v count=1
-
-  - name: build-and-publish
-    image: plugins/docker
-    settings:
-      registry: https://docker-registry.fenz.online
-      repo: live4/${IMAGE_NAME}
-      tags: ${GIT_TAG}
-    when:
-      event:
-        include:
-          - push
-
-  - name: deploy
-    image: appleboy/drone-ansible
-    settings:
-      playbook: ansible/playbook.yml
-      inventory: ansible/inventory.yml
-      extra_vars:
-        - ENV=test/drone
-        - IMAGE=${IMAGE_NAME}:${GIT_TAG}
-    when:
-      event:
-        include:
-          - push
+- name: notify
+  image: plugins/slack
+  settings:
+    webhook:
+      from_secret: webhook
+  depends_on:
+  - frontend
+  - backend
