@@ -6,7 +6,7 @@ steps:
   - name: start
     image: docker/compose:latest
     commands:
-      - docker-compose -f /drone/src/docker-compose.yml up -d
+      - docker-compose -version
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
