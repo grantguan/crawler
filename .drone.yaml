@@ -1,30 +1,22 @@
 kind: pipeline
-type: docker
-
 name: default
 
 steps:
-  - name: wait-for-postgres
-    image: postgres:latest  # 使用一個 Postgres 的 Docker 映像
+  - name: start-postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: dev_test
+      POSTGRES_USER: testRoot
+      POSTGRES_PASSWORD: testRoot
     commands:
-      - sh
-      - -c
-      - |
-        until pg_isready -h $${POSTGRES_HOST} -p $${POSTGRES_PORT}; do
-          echo "Waiting for PostgreSQL to start..."
-          sleep 1
-        done
+      - dockerize -wait tcp://localhost:5432 -timeout 1m
+    detach: true
 
-  - name: wait-for-redis
-    image: redis:latest  # 使用一個 Redis 的 Docker 映像
+  - name: start-redis
+    image: redis:latest
     commands:
-      - sh
-      - -c
-      - |
-        until redis-cli -h $${REDIS_HOST} -p $${REDIS_PORT} ping; do
-          echo "Waiting for Redis to start..."
-          sleep 1
-        done
+      - dockerize -wait tcp://localhost:6379 -timeout 1m
+    detach: true
 
   - name: run-tests
     image: golang:1.20.6
