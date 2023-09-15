@@ -1,37 +1,15 @@
 kind: pipeline
-type: docker
-name: docker-compose-example
+name: default
 
 steps:
-  - name: start
-    image: docker/compose:latest
-    environment:
-      DOCKER_HOST: tcp://docker:2375 
-    commands:
-      - docker-compose --version
-      - docker-compose -f ./docker-compose.yml up -d
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-
-  - name: run-tests
-    image: golang:1.20.6
-    environment:
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: dev_test
-      POSTGRES_USER: testRoot
-      POSTGRES_PASSWORD: testRoot
-      REDIS_HOST: localhost
-      REDIS_PORT: 6379
-    commands:
-      - go test ./integration/... -ci=1 -v count=1
- 
-
-  - name: stop
-    image: docker/compose:latest
-    commands:
-      - docker-compose -f /drone/src/docker-compose.yml down
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
+- name: test
+  image: compose:1.23.2
+  volumes:
+  - name: docker_sock
+    path: /var/run/docker.sock
+  commands:
+  - up -f /drone/src/docker-compose.yaml
+volumes:
+  - name: docker_sock
+    host:
+      path: /var/run/docker.sock
