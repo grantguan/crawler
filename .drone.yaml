@@ -10,6 +10,7 @@ environment:
   GIT_TAG: ''
   PROJECT: 'live4-data-center-service'
   IMAGE_NAME: 'live4-data-center'
+  DOCKER_HOST: tcp://docker-host:2375  # 替换为Docker守护程序的正确地址
 
 trigger:
   branch:
