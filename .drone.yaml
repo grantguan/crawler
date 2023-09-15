@@ -6,6 +6,7 @@ steps:
   - name: start
     image: docker/compose:latest
     commands:
+      - pwd
       - docker-compose.yml up -d
     volumes:
       - name: dockersock
