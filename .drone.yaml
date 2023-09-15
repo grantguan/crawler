@@ -2,7 +2,6 @@ kind: pipeline
 name: docker-compose-example
 
 steps:
-
   - name: start
     image: docker/compose:latest
     commands:
@@ -12,8 +11,6 @@ steps:
         path: /var/run/docker.sock
 
   - name: run-tests
-    depends_on:
-      - start
     image: golang:1.20.6
     environment:
       POSTGRES_HOST: localhost
@@ -26,10 +23,7 @@ steps:
     commands:
       - go test ./integration/... -ci=1 -v count=1
  
-
   - name: stop
-    depends_on:
-      - tests
     image: docker/compose:latest
     commands:
       - docker-compose -f docker-compose.yml down
