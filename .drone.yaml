@@ -39,11 +39,11 @@ steps:
     commands:
       - go test ./internal/... -v count=1
 
-  - name: integration-test
-    depends_on:
-      - setup-postgres
-      - setup-redis
-      - run-tests
+  # - name: integration-test
+  #   depends_on:
+  #     - setup-postgres
+  #     - setup-redis
+  #     - run-tests
 
   - name: setup-postgres
     image: postgres:11
@@ -75,7 +75,11 @@ steps:
       REDIS_PORT: 6379
     commands:
       - go test ./integration/... -ci=1 -v count=1
-
+  - name: integration-test
+    depends_on:
+      - setup-postgres
+      - setup-redis
+      - run-tests
   # - name: integration-test
   #   image: golang:1.20.6
   #   commands:
