@@ -1,17 +1,33 @@
 kind: pipeline
 type: docker
 name: docker-compose-example
-
 steps:
-  integration-tests:
+  - name: start
     image: docker/compose:latest
-    environment:
-      DOCKER_HOST: tcp://docker-host:2375  # Replace with the actual Docker daemon address and port
     commands:
-      - docker-compose up -d
-      - sleep 10  # Wait for services to start, adjust as needed
-      - npm install # or your application's build and test commands
-      - npm test
-      - docker-compose down
-    when:
-      event: [push, pull_request]
+      - docker-compose -f docker-compose.yml up -d
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+
+  - name: run-tests
+    image: golang:1.20.6
+    environment:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: dev_test
+      POSTGRES_USER: testRoot
+      POSTGRES_PASSWORD: testRoot
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+    commands:
+      - go test ./integration/... -ci=1 -v count=1
+ 
+
+  - name: stop
+    image: docker/compose:latest
+    commands:
+      - docker-compose -f docker-compose.yml down
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
