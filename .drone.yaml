@@ -6,8 +6,7 @@ steps:
   - name: start
     image: docker/compose:latest
     commands:
-      - pwd
-      - docker-compose.yml up -d
+      - docker-compose -f /drone/src/docker-compose.yml up -d
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
@@ -29,7 +28,7 @@ steps:
   - name: stop
     image: docker/compose:latest
     commands:
-      - docker-compose.yml down
+      - docker-compose -f /drone/src/docker-compose.yml down
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
