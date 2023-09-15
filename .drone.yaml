@@ -1,32 +1,40 @@
 kind: pipeline
 type: docker
-name: docker-compose-example
+
+name: default
 
 steps:
-  - name: setup-postgres
-    image: postgres:11
+  - name: wait-for-postgres
+    image: postgres:latest  # 使用一個 Postgres 的 Docker 映像
+    commands:
+      - sh
+      - -c
+      - |
+        until pg_isready -h $${POSTGRES_HOST} -p $${POSTGRES_PORT}; do
+          echo "Waiting for PostgreSQL to start..."
+          sleep 1
+        done
+
+  - name: wait-for-redis
+    image: redis:latest  # 使用一個 Redis 的 Docker 映像
+    commands:
+      - sh
+      - -c
+      - |
+        until redis-cli -h $${REDIS_HOST} -p $${REDIS_PORT} ping; do
+          echo "Waiting for Redis to start..."
+          sleep 1
+        done
+
+  - name: run-tests
+    image: golang:1.20.6
     environment:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
       POSTGRES_DB: dev_test
       POSTGRES_USER: testRoot
       POSTGRES_PASSWORD: testRoot
-    ports:
-      - 5432
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
     commands:
-      - sleep 5 # Give PostgreSQL some time to start
-
-  - name: setup-redis
-    image: redis:7.2.0
-    ports:
-      - 6379
-    commands:
-      - sleep 5 # Give Redis some time to start
-
-  - name: integration-test
-    image: golang:1.20.6
-    commands:
-      - docker run -d --name postgres -e POSTGRES_DB=dev_test -e POSTGRES_USER=testRoot -e POSTGRES_PASSWORD=testRoot postgres:11 -p 5432:5432
-      - docker run -d --name redis -p 6379:6379 redis:7.2.0
-      - docker run --link postgres:postgre --link redis:redis --name my-golang-container -v $(pwd):/go/src/app -w /go/src/app golang:1.20.6 go test ./integration/... -ci=1 -v count=1
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
+      - go test ./integration/... -ci=1 -v count=1
