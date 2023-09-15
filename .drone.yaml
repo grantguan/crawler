@@ -1,74 +1,51 @@
-# kind: pipeline
-# type: docker
-# name: default
-
-# platform:
-#   os: linux
-#   arch: amd64
-
-# environment:
-#   GIT_TAG: ''
-#   PROJECT: 'live4-data-center-service'
-#   IMAGE_NAME: 'live4-data-center'
-
-# trigger:
-#   branch:
-#     exclude:
-#       - main
-
-# steps:
-
-#   - name: run-docker-compose
-#     image: docker/compose:latest
-#     commands:
-#       - docker-compose up -d
-#     when:
-#       event:
-#         - push
-#         - pull_request
-
-#   - name: run-tests
-#     image: golang:1.20.6
-#     environment:
-#       POSTGRES_HOST: localhost
-#       POSTGRES_PORT: 5432
-#       POSTGRES_DB: dev_test
-#       POSTGRES_USER: testRoot
-#       POSTGRES_PASSWORD: testRoot
-#       REDIS_HOST: localhost
-#       REDIS_PORT: 6379
-#     commands:
-#       - go test ./integration/... -ci=1 -v count=1
- 
-
-#   - name: stop-docker-compose
-#     image: docker/compose:latest
-#     commands:
-#       - docker-compose down
-#     when:
-#       event:
-#         - push
-#         - pull_request
-
 kind: pipeline
 type: docker
 name: default
 
+platform:
+  os: linux
+  arch: amd64
+
+environment:
+  GIT_TAG: ''
+  PROJECT: 'live4-data-center-service'
+  IMAGE_NAME: 'live4-data-center'
+
+trigger:
+  branch:
+    exclude:
+      - main
+
 steps:
-- name: backend
-  image: golang
-  commands:
-  - go build
-  - go test
 
-  - name: frontend
-    image: node
+  - name: run-docker-compose
+    image: docker/compose:latest
     commands:
-    - npm install
-    - npm test
+      - docker-compose up -d
+    when:
+      event:
+        - push
+        - pull_request
 
-- name: notify
-  image: plugins/slack
-  settings:
-    webhook:
-      from_secret: webhook
+  - name: run-tests
+    image: golang:1.20.6
+    environment:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: dev_test
+      POSTGRES_USER: testRoot
+      POSTGRES_PASSWORD: testRoot
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+    commands:
+      - go test ./integration/... -ci=1 -v count=1
+ 
+
+  - name: stop-docker-compose
+    image: docker/compose:latest
+    commands:
+      - docker-compose down
+    when:
+      event:
+        - push
+        - pull_request
