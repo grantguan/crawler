@@ -3,14 +3,10 @@ type: docker
 name: docker-compose-example
 
 steps:
-  - name: build
-    image: golang:1.20.6
-    commands:
-      - apt-get update && apt-get install sudo -y
-
   - name: start
     image: docker/compose:latest
     commands:
+      - apt-get update && apt-get install sudo -y
       - sudo docker-compose.yml up -d
     volumes:
       - name: dockersock
@@ -33,6 +29,7 @@ steps:
   - name: stop
     image: docker/compose:latest
     commands:
+      - apt-get update && apt-get install sudo -y
       - sudo docker-compose.yml down
     volumes:
       - name: dockersock
