@@ -9,9 +9,20 @@ environment:
   IMAGE_NAME: 'live4-data-center-drone'
 
 steps:
+  - name: checkout
+    image: alpine/git
+    commands:
+      - echo hello $GIT_TAG bye
+      - git clone --recursive https://github.com/bobiMedia/live4-data-center-service.git .
+      - GIT_TAG=$(git rev-parse --short HEAD)  # 获取 Git 提交的前7个字符作为 TAG
+      - echo 123 ${GIT_TAG}
+    when:
+      event:
+        exclude:
+          - push
+
   - name: generate-random-tag
     image: bash
     commands:
       - echo hello $GIT_TAG bye
-      - GIT_TAG=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8)
       - echo Generated random tag $GIT_TAG
