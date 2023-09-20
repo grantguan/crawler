@@ -14,8 +14,8 @@ steps:
     commands:
       - echo hello $GIT_TAG bye
       - git clone --recursive https://github.com/bobiMedia/live4-data-center-service.git .
-      - GIT_TAG=$(git rev-parse --short HEAD)  # 获取 Git 提交的前7个字符作为 TAG
-      - echo 123 ${GIT_TAG}
+      - export GIT_TAG=$(git rev-parse --short HEAD)  # 获取 Git 提交的前7个字符作为 TAG
+      - echo "GIT_TAG=${GIT_TAG}" >> $DRONE_ENV_FILE 
     when:
       event:
         exclude:
