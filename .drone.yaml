@@ -1,32 +1,17 @@
 kind: pipeline
-name: default
+type: docker
+name: docker-compose-example
+
+
+environment:
+  GIT_TAG: ''
+  PROJECT: 'live4-data-center-service'
+  IMAGE_NAME: 'live4-data-center-drone'
 
 steps:
-  - name: start-postgres
-    image: postgres:latest
-    environment:
-      POSTGRES_DB: dev_test
-      POSTGRES_USER: testRoot
-      POSTGRES_PASSWORD: testRoot
+  - name: generate-random-tag
+    image: bash
     commands:
-      - dockerize -wait tcp://localhost:5432 -timeout 1m
-    detach: true
-
-  - name: start-redis
-    image: redis:latest
-    commands:
-      - dockerize -wait tcp://localhost:6379 -timeout 1m
-    detach: true
-
-  - name: run-tests
-    image: golang:1.20.6
-    environment:
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: dev_test
-      POSTGRES_USER: testRoot
-      POSTGRES_PASSWORD: testRoot
-      REDIS_HOST: localhost
-      REDIS_PORT: 6379
-    commands:
-      - go test ./integration/... -ci=1 -v count=1
+      - echo hello $GIT_TAG bye
+      - GIT_TAG=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8)
+      - echo Generated random tag $GIT_TAG
