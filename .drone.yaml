@@ -20,7 +20,7 @@ steps:
     image: alpine
     commands:
       - source git_tag.txt  # 从文件中读取 GIT_TAG
-      - echo "Using GIT_TAG: $GIT_TAG"
+      - echo Using GIT_TAG $GIT_TAG
 
 # environment:
 #   GIT_TAG: ''
