@@ -16,6 +16,7 @@ steps:
       - git clone --recursive https://github.com/bobiMedia/live4-data-center-service.git .
       - export GIT_TAG=$(git rev-parse --short HEAD)  # 获取 Git 提交的前7个字符作为 TAG
       - echo "GIT_TAG=${GIT_TAG}" >> $DRONE_ENV_FILE 
+      - echo "GIT_TAG=${GIT_TAG}" > git_tag.txt
     when:
       event:
         exclude:
@@ -25,4 +26,5 @@ steps:
     image: bash
     commands:
       - echo hello $DRONE_ENV_FILE bye
+      - source git_tag.txt
       - echo Generated random tag $GIT_TAG
