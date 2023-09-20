@@ -11,7 +11,7 @@ steps:
   - name: Checkout Git Repository
     image: alpine/git  # 使用 Git 工具
     commands:
-      - git clone --branch ${DRONE_BRANCH} https://github.com/bobiMedia/live4-data-center-service.git
+      - git clone --recursive https://github.com/bobiMedia/live4-data-center-service.git
       - cd live4-data-center-service
 
   - name: Set GIT_TAG
