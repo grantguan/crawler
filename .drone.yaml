@@ -13,15 +13,20 @@ steps:
     commands:
       - git clone --branch ${DRONE_BRANCH} https://github.com/bobiMedia/live4-data-center-service.git
       - cd live4-data-center-service
-      - export GIT_TAG=$(git rev-parse --short HEAD)  # 获取 Git 提交的前7个字符作为 TAG
+
+  - name: Set GIT_TAG
+    image: plugins/git
+    settings:
+      credentials:
+        from_secret: devops-ssh  # 替换为您保存 GitHub 凭据的 Drone CI Secret 的名称
+    commands:
+      - export GIT_TAG=$(git rev-parse --short HEAD)
       - echo "GIT_TAG=${GIT_TAG}" >> $DRONE_ENV_FILE  # 将 GIT_TAG 导出到环境变量
 
-
-  - name: use-git-tag
+  - name: Print Environment Variables
     image: alpine
     commands:
-      - source git_tag.txt  # 从文件中读取 GIT_TAG
-      - echo Using GIT_TAG $GIT_TAG
+      - cat $DRONE_ENV_FILE
 
 # environment:
 #   GIT_TAG: ''
