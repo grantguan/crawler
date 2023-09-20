@@ -8,13 +8,14 @@ environment:
   IMAGE_NAME: 'live4-data-center-drone'
 
 steps:
-  - name: checkout
-    image: alpine/git
+  - name: Checkout Git Repository
+    image: alpine/git  # 使用 Git 工具
     commands:
-      - echo hello $GIT_TAG bye
-      - git clone --recursive https://github.com/bobiMedia/live4-data-center-service.git .
-      - export GIT_TAG=$(git rev-parse --short HEAD)
-      - echo "GIT_TAG=${GIT_TAG}" > git_tag.txt
+      - git clone --branch ${DRONE_BRANCH} https://github.com/bobiMedia/live4-data-center-service.git
+      - cd live4-data-center-service
+      - export GIT_TAG=$(git rev-parse --short HEAD)  # 获取 Git 提交的前7个字符作为 TAG
+      - echo "GIT_TAG=${GIT_TAG}" >> $DRONE_ENV_FILE  # 将 GIT_TAG 导出到环境变量
+
 
   - name: use-git-tag
     image: alpine
