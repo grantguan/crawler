@@ -43,22 +43,22 @@ steps:
       VERSION: $VERSION
       IMAGE_NAME: $IMAGE_NAME
       DOCKER_HUB: $DOCKER_HUB
-    settings:
-      playbook: ansible/playbook.yml
-      galaxy: ansible/requirements.yml
-      inventory: ansible/inventory.yml
-      # syntax_check: true
-      credentialsId: $credentialsId
-      private_key:
-        from_secret: devops-ssh
-      # disableHostKeyChecking: true  
-      ssh_args:
-        - export GIT_TAG=$(git rev-parse --short HEAD)
-      installation: ansible
-      extra_vars:
-        - ENV=droneFile
-        - IMAGE=docker-registry.fenz.online/live4/live4-data-center-drone:${VERSION}-${DRONE_COMMIT_SHA:0:7}
-        - NOTIFY=true
+      settings:
+        playbook: ansible/playbook.yml
+        galaxy: ansible/requirements.yml
+        inventory: ansible/inventory.yml
+        # syntax_check: true
+        credentialsId: $credentialsId
+        private_key:
+          from_secret: devops-ssh
+        # disableHostKeyChecking: true  
+        ssh_args:
+          - export GIT_TAG=$(git rev-parse --short HEAD)
+        installation: ansible
+        extra_vars:
+          - ENV=droneFile
+          - IMAGE=docker-registry.fenz.online/live4/live4-data-center-drone:${VERSION}-${DRONE_COMMIT_SHA:0:7}
+          - NOTIFY=true
 
 # environment:
 #   GIT_TAG: ''
