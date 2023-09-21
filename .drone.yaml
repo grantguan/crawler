@@ -3,7 +3,7 @@ type: docker
 name: docker-compose-example
 
 environment:
-  GIT_TAG: $(git rev-parse --short HEAD)
+  GIT_TAG: ${DRONE_COMMIT_SHA:0:7}
   PROJECT: 'live4-data-center-service'
   IMAGE_NAME: 'live4-data-center-drone'
 
@@ -31,7 +31,7 @@ steps:
       path: /shared-data
     commands:
       - echo $GIT_TAG
-      - echo ${DRONE_COMMIT_SHA:0:8}
+      - echo ${DRONE_COMMIT_SHA:0:7}
 
 # environment:
 #   GIT_TAG: ''
