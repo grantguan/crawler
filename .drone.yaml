@@ -3,7 +3,7 @@ type: docker
 name: docker-compose-example
 
 environment:
-  GIT_TAG: '123'
+  GIT_TAG: $(git rev-parse --short HEAD)
   PROJECT: 'live4-data-center-service'
   IMAGE_NAME: 'live4-data-center-drone'
 
