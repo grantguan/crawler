@@ -23,8 +23,6 @@ steps:
     commands:
       - export GIT_TAG=$(git rev-parse --short HEAD)
       - echo $GIT_TAG
-      - mkdir -p /shared-data  # 创建目录，如果不存在
-      - echo "GIT_TAG=$GIT_TAG" > /shared-data/variables.txt
 
   - name: Print Environment Variables
     image: alpine
@@ -33,9 +31,7 @@ steps:
       path: /shared-data
     commands:
       - echo $GIT_TAG
-      - cat /shared-data/variables.txt
-      - source /shared-data/variables.txt
-      - echo Global Variable in Step 2 $GIT_TAG
+      - echo ${DRONE_COMMIT_SHA:0:8}
 
 # environment:
 #   GIT_TAG: ''
