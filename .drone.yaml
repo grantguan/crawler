@@ -16,15 +16,17 @@ steps:
     commands:
       - export GIT_TAG=$(git rev-parse --short HEAD)
       - echo $GIT_TAG
-      - echo "GIT_TAG=$GIT_TAG" >> /tmp/variables.txt
+      - echo "GIT_TAG=$GIT_TAG" >> /shared-data/variables.txt
 
   - name: Print Environment Variables
     image: alpine
     commands:
       - echo $GIT_TAG
-      - source /tmp/variables.txt
+      - source /shared-data/variables.txt
       - echo Global Variable in Step 2 $GIT_TAG
-
+volumes:
+  - name: shared-data
+    path: /shared-data
 # environment:
 #   GIT_TAG: ''
 #   PROJECT: 'live4-data-center-service'
