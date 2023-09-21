@@ -16,18 +16,14 @@ steps:
     commands:
       - export GIT_TAG=$(git rev-parse --short HEAD)
       - echo $GIT_TAG
-    networks:  # 定义一个网络
-      - name: mynetwork  # 网络名称
-        driver: bridge  # 使用bridge驱动，也可以根据需要选择其他驱动
+      - echo "GIT_TAG=$GIT_TAG" >> /tmp/variables.txt
 
   - name: Print Environment Variables
     image: alpine
     commands:
       - echo $GIT_TAG
-      - echo $GIT_TAG1
-    networks:  # 定义一个网络
-      - name: mynetwork  # 网络名称
-        driver: bridge  # 使用bridge驱动，也可以根据需要选择其他驱动
+      - source /tmp/variables.txt
+      - echo Global Variable in Step 2 $GIT_TAG
 
 # environment:
 #   GIT_TAG: ''
