@@ -4,6 +4,7 @@ name: docker-compose-example
 
 environment:
   GIT_TAG: ${DRONE_COMMIT_SHA:0:7}
+  VERSION: latest3
   PROJECT: 'live4-data-center-service'
   IMAGE_NAME: 'live4-data-center-drone'
 
@@ -32,6 +33,32 @@ steps:
     commands:
       - echo $GIT_TAG
       - echo ${DRONE_COMMIT_SHA:0:7}
+
+  - name: ansible deploy
+    image: plugins/ansible:latest
+    environment:
+      credentialsId: 
+        from_secret: devops-ssh
+      GIT_TAG: $GIT_TAG
+      VERSION: $VERSION
+      IMAGE_NAME: $IMAGE_NAME
+      DOCKER_HUB: $DOCKER_HUB
+    settings:
+      playbook: ansible/playbook.yml
+      galaxy: ansible/requirements.yml
+      inventory: ansible/inventory.yml
+      # syntax_check: true
+      credentialsId: $credentialsId
+      private_key:
+        from_secret: devops-ssh
+      # disableHostKeyChecking: true  
+      ssh_args:
+        - export GIT_TAG=$(git rev-parse --short HEAD)
+      installation: ansible
+      extra_vars:
+        - ENV=droneFile
+        - IMAGE=docker-registry.fenz.online/live4/live4-data-center-drone:$VERSION-$GIT_TAG
+        - NOTIFY=true
 
 # environment:
 #   GIT_TAG: ''
