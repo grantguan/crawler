@@ -16,6 +16,7 @@ steps:
     commands:
       - export GIT_TAG=$(git rev-parse --short HEAD)
       - echo $GIT_TAG
+      - mkdir -p /shared-data  # 创建目录，如果不存在
       - echo "GIT_TAG=$GIT_TAG" >> /shared-data/variables.txt
 
   - name: Print Environment Variables
