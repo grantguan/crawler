@@ -8,12 +8,6 @@ environment:
   IMAGE_NAME: 'live4-data-center-drone'
 
 steps:
-  - name: Checkout Git Repository
-    image: alpine/git  # 使用 Git 工具
-    commands:
-      - git clone --recursive https://github.com/bobiMedia/live4-data-center-service.git .
-      - cd live4-data-center-service
-
   - name: Set GIT_TAG
     image: plugins/git
     settings:
@@ -21,6 +15,7 @@ steps:
         from_secret: devops-ssh  # 替换为您保存 GitHub 凭据的 Drone CI Secret 的名称
     commands:
       - export GIT_TAG=$(git rev-parse --short HEAD)
+      - echo $GIT_TAG
       - echo "GIT_TAG=${GIT_TAG}" >> $DRONE_ENV_FILE  # 将 GIT_TAG 导出到环境变量
 
   - name: Print Environment Variables
