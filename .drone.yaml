@@ -7,9 +7,16 @@ environment:
   PROJECT: 'live4-data-center-service'
   IMAGE_NAME: 'live4-data-center-drone'
 
+volumes:
+  - name: shared-data
+    path: /shared-data
+
 steps:
   - name: Set GIT_TAG
     image: plugins/git
+    volumes:
+    - name: shared-data
+      path: /shared-data
     settings:
       credentials:
         from_secret: devops-ssh  # 替换为您保存 GitHub 凭据的 Drone CI Secret 的名称
@@ -21,13 +28,15 @@ steps:
 
   - name: Print Environment Variables
     image: alpine
+    volumes:
+    - name: shared-data
+      path: /shared-data
     commands:
       - echo $GIT_TAG
+      - cat /shared-data/variables.txt
       - source /shared-data/variables.txt
       - echo Global Variable in Step 2 $GIT_TAG
-volumes:
-  - name: shared-data
-    path: /shared-data
+
 # environment:
 #   GIT_TAG: ''
 #   PROJECT: 'live4-data-center-service'
