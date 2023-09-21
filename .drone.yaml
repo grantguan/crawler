@@ -16,12 +16,12 @@ steps:
     commands:
       - export GIT_TAG=$(git rev-parse --short HEAD)
       - echo $GIT_TAG
-      - echo "GIT_TAG=${GIT_TAG}" >> $DRONE_ENV_FILE  # 将 GIT_TAG 导出到环境变量
 
   - name: Print Environment Variables
     image: alpine
+    GIT_TAG: $GIT_TAG
     commands:
-      - cat $DRONE_ENV_FILE
+      - echo $GIT_TAG
 
 # environment:
 #   GIT_TAG: ''
