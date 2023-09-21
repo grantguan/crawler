@@ -6,6 +6,8 @@ environment:
   GIT_TAG: $(git rev-parse --short HEAD)
   PROJECT: 'live4-data-center-service'
   IMAGE_NAME: 'live4-data-center-drone'
+  GIT_TAG1:
+    - export GIT_TAG=$(git rev-parse --short HEAD)
 
 steps:
   - name: Set GIT_TAG
@@ -21,6 +23,7 @@ steps:
     image: alpine
     commands:
       - echo $GIT_TAG
+      - echo $GIT_TAG1
 
 # environment:
 #   GIT_TAG: ''
