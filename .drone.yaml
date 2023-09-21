@@ -57,7 +57,7 @@ steps:
       installation: ansible
       extra_vars:
         - ENV=droneFile
-        - IMAGE=docker-registry.fenz.online/live4/live4-data-center-drone:$VERSION-${DRONE_COMMIT_SHA:0:7}
+        - IMAGE=docker-registry.fenz.online/live4/live4-data-center-drone:${VERSION}-${DRONE_COMMIT_SHA:0:7}
         - NOTIFY=true
 
 # environment:
