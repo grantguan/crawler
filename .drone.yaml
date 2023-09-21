@@ -6,8 +6,6 @@ environment:
   GIT_TAG: $(git rev-parse --short HEAD)
   PROJECT: 'live4-data-center-service'
   IMAGE_NAME: 'live4-data-center-drone'
-  GIT_TAG1:
-    - export GIT_TAG=$(git rev-parse --short HEAD)
 
 steps:
   - name: Set GIT_TAG
@@ -18,12 +16,18 @@ steps:
     commands:
       - export GIT_TAG=$(git rev-parse --short HEAD)
       - echo $GIT_TAG
+    networks:  # 定义一个网络
+      - name: mynetwork  # 网络名称
+        driver: bridge  # 使用bridge驱动，也可以根据需要选择其他驱动
 
   - name: Print Environment Variables
     image: alpine
     commands:
       - echo $GIT_TAG
       - echo $GIT_TAG1
+    networks:  # 定义一个网络
+      - name: mynetwork  # 网络名称
+        driver: bridge  # 使用bridge驱动，也可以根据需要选择其他驱动
 
 # environment:
 #   GIT_TAG: ''
