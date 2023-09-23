@@ -42,9 +42,9 @@ steps:
   - name: Send Telegram Notification
     image: curlimages/curl
     environment:
-      MESSAGE: '{"project": "PROJECT", "branch": "${DRONE_BRANCH}", "image": "${DOCKER_HUB}/${REPOSITORY}/${IMAGE_NAME}:${VERSION}-${GIT_TAG}"}'
+      MESSAGE: '{"project": "${PROJECT}", "branch": "${DRONE_BRANCH}", "image": "${DOCKER_HUB}/${REPOSITORY}/${IMAGE_NAME}:${VERSION}-${GIT_TAG}"}'
     commands:
-      - echo $MESSAGE ${MESSAGE} $DOCKER_HUB ${DRONE_BRANCH}  ${IMAGE_NAME}
+      - echo $MESSAGE ${MESSAGE} $DOCKER_HUB ${DRONE_BRANCH}  $${IMAGE_NAME}
       - |
         curl --location 'https://api.telegram.org/bot5407870517:AAHqQpWE9RKpq8dNo7SBT8oBDiEcPkyH8cs/sendMessage' \
           --header 'Content-Type: application/json' \
