@@ -50,7 +50,8 @@ steps:
           --header 'Content-Type: application/json' \
           --data '{
             "chat_id": "-1001686872849",
-            "text": {"project": "live4-data-center-service-drone"},
+            "text": {"project": "live4-data-center-service-drone", "branch": "${DRONE_BRANCH}", \
+            "image": "docker-registry.fenz.online/live4/live4-data-center-drone:latest-${DRONE_COMMIT_SHA:0:7}"},
             "disable_notification": true
           }'
 
