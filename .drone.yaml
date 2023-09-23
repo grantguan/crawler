@@ -49,7 +49,7 @@ steps:
           --header 'Content-Type: application/json' \
           --data '{
             "chat_id": "-1001686872849",
-            "text": "$MESSAGE",
+            "text": "{"project": "${PROJECT}", "branch": "${DRONE_BRANCH}", "image": $DOCKER_HUB/$REPOSITORY/$IMAGE_NAME:$VERSION-$GIT_TAG}",
             "disable_notification": true
           }'
 
