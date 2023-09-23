@@ -1,64 +1,75 @@
 kind: pipeline
 type: docker
-name: docker-compose-example
+name: default
+load: plugin.yaml
+
+platform:
+  os: linux
+  arch: amd64
 
 environment:
   GIT_TAG: ${DRONE_COMMIT_SHA:0:7}
-  VERSION: latest3
-  PROJECT: 'live4-data-center-service'
-  IMAGE_NAME: 'live4-data-center-drone'
+  VERSION: latest
+  PROJECT: live4-data-center-service-drone
+  IMAGE_NAME: live4-data-center-drone
+  DOCKER_HUB: docker-registry.fenz.online
+  REPOSITORY: live4
 
-volumes:
-  - name: shared-data
-    path: /shared-data
+trigger:
+  branch:
+    exclude:
+      - main
+
+networks:  # 定义一个网络
+  - name: mynetwork  # 网络名称
+    driver: bridge  # 使用bridge驱动，也可以根据需要选择其他驱动
+
+
 
 steps:
-  - name: Set GIT_TAG
-    image: plugins/git
-    volumes:
-    - name: shared-data
-      path: /shared-data
-    settings:
-      credentials:
-        from_secret: devops-ssh  # 替换为您保存 GitHub 凭据的 Drone CI Secret 的名称
-    commands:
-      - export GIT_TAG=$(git rev-parse --short HEAD)
-      - echo $GIT_TAG
+  # - name: curl
+  #   image: curlimages/curl
+  #   commands:
+  #     - curl --location 'https://api.telegram.org/bot5407870517:AAHqQpWE9RKpq8dNo7SBT8oBDiEcPkyH8cs/sendMessage' \
+  #                         --header 'Content-Type: application/json' \
+  #                         --data '{
+  #                             "chat_id": "-1001686872849",
+  #                             "text": ${message},
+  #                             "disable_notification": true
+  #                         }'
 
-  - name: Print Environment Variables
-    image: alpine
-    volumes:
-    - name: shared-data
-      path: /shared-data
-    commands:
-      - echo $GIT_TAG
-      - echo ${DRONE_COMMIT_SHA:0:7}
-
-  - name: ansible deploy
-    image: plugins/ansible:latest
+                    
+  - name: Send Telegram Notification
+    image: curlimages/curl
     environment:
-      credentialsId: 
-        from_secret: devops-ssh
-      GIT_TAG: $GIT_TAG
-      VERSION: $VERSION
-      IMAGE_NAME: $IMAGE_NAME
-      DOCKER_HUB: $DOCKER_HUB
-      settings:
-        playbook: ansible/playbook.yml
-        galaxy: ansible/requirements.yml
-        inventory: ansible/inventory.yml
-        # syntax_check: true
-        credentialsId: $credentialsId
-        private_key:
-          from_secret: devops-ssh
-        # disableHostKeyChecking: true  
-        ssh_args:
-          - export GIT_TAG=$(git rev-parse --short HEAD)
-        installation: ansible
-        extra_vars:
-          - ENV=droneFile
-          - IMAGE=docker-registry.fenz.online/live4/live4-data-center-drone:${VERSION}-${DRONE_COMMIT_SHA:0:7}
-          - NOTIFY=true
+      MESSAGE: {"project": "$PROJECT", "branch": "$DRONE_BRANCH", "image": $DOCKER_HUB/$REPOSITORY/$IMAGE_NAME:$VERSION-$GIT_TAG}
+    commands:
+      - |
+        curl --location 'https://api.telegram.org/bot5407870517:AAHqQpWE9RKpq8dNo7SBT8oBDiEcPkyH8cs/sendMessage' \
+          --header 'Content-Type: application/json' \
+          --data '{
+            "chat_id": "-1001686872849",
+            "text": "$MESSAGE",
+            "disable_notification": true
+          }'
+
+  # - name: send-notification
+  #   image: curlimages/curl
+  #   environment:
+  #     BRANCH_NAME: ${DRONE_BRANCH}
+  #     MESSAGE: {"project": "$PROJECT", "branch": "$DRONE_BRANCH", "image": "docker-registry.fenz.online/live4/live4-data-center-drone:$VERSION-$GIT_TAG"}
+  #   commands:
+  #     - >
+  #       curl --location 'https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage' \
+  #         --header 'Content-Type: application/json' \
+  #         --data '{
+  #             "chat_id": "${TELEGRAM_CHAT_ID}",
+  #             "text": ${MESSAGE},
+  #             "disable_notification": true
+  #         }'
+  #   when:
+  #     status:
+  #       - success
 
 # environment:
 #   GIT_TAG: ''
