@@ -50,8 +50,10 @@ steps:
             "chat_id": "-1001686872849",
             "text": {
             "title": "Continuous Integration is done", 
-            "project": "live4-data-center-service-drone", "branch": "${DRONE_BRANCH}",
-            "image": "docker-registry.fenz.online/live4/live4-data-center-drone:latest-${DRONE_COMMIT_SHA:0:7}"},
+            "project": "live4-data-center-service-drone", 
+            "branch": "${DRONE_BRANCH}",
+            "image": "docker-registry.fenz.online/live4/live4-data-center-drone:latest-${DRONE_COMMIT_SHA:0:7}"
+            },
             "disable_notification": true
           }'
 
