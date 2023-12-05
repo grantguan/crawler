@@ -1,0 +1,142 @@
+kind: pipeline
+type: docker
+name: default
+load: plugin.yaml
+
+platform:
+  os: linux
+  arch: amd64
+
+environment:
+  GIT_TAG: ${DRONE_COMMIT_SHA:0:7}
+  VERSION: latest
+  PROJECT: live4-data-center-service-drone
+  IMAGE_NAME: live4-data-center-drone
+  DOCKER_HUB: docker-registry.fenz.online
+  REPOSITORY: live4
+
+trigger:
+  branch:
+    exclude:
+      - main
+    include:
+      - develop
+      - droneFile
+
+networks:  # 定义一个网络
+  - name: mynetwork  # 网络名称
+    driver: bridge  # 使用bridge驱动，也可以根据需要选择其他驱动
+
+
+steps:
+  - name: build environment
+    image: golang:1.20.6
+    commands:
+      - apt-get update && apt-get -y install protobuf-compiler
+      - make init
+      - make all
+
+  - name: unit-test
+    image: golang:1.20.6
+    commands:
+      - go test ./internal/... -v count=1
+
+  - name: postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: dev_test
+      POSTGRES_USER: testRoot
+      POSTGRES_PASSWORD: testRoot
+    detach: true
+
+  - name: redis
+    image: redis:latest
+    detach: true
+
+  - name: integration test
+    image: golang:1.20.6
+    environment:
+      POSTGRES_HOST: postgres  # 使用容器名作为主机名
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: dev_test
+      POSTGRES_USER: testRoot
+      POSTGRES_PASSWORD: testRoot
+      REDIS_HOST: redis  # 使用容器名作为主机名
+      REDIS_PORT: 6379
+    commands:
+      - sleep 20
+      - go test ./integration/... -ci=1 -v count=1
+  
+  - name: docker image deploy
+    image: docker:dind
+    volumes:
+    - name: dockersock
+      path: /var/run/docker.sock
+    environment:
+      USERNAME:
+        from_secret: username
+      PASSWORD:
+        from_secret: password
+    commands:
+      - docker build -t $IMAGE_NAME:$VERSION-$GIT_TAG .
+      - docker tag $IMAGE_NAME:$VERSION-$GIT_TAG $DOCKER_HUB/$REPOSITORY/$IMAGE_NAME:$VERSION-$GIT_TAG
+      - docker login -u $USERNAME -p $PASSWORD $DOCKER_HUB
+      - docker push $DOCKER_HUB/$REPOSITORY/$IMAGE_NAME:$VERSION-$GIT_TAG
+    when:
+      branch:
+        - dev
+        - uat
+        - uat-*
+        - droneFile
+
+  - name: ansible deploy
+    image: plugins/ansible:latest
+    environment:
+      credentialsId: 
+        from_secret: devops-ssh
+    settings:
+      playbook: ansible/playbook.yml
+      galaxy: ansible/requirements.yml
+      inventory: ansible/inventory.yml
+      credentialsId: $credentialsId
+      private_key:
+        from_secret: devops-ssh
+      installation: ansible
+      extra_vars:
+        - ENV=droneFile
+        - IMAGE=docker-registry.fenz.online/live4/live4-data-center-drone:latest-${DRONE_COMMIT_SHA:0:7}
+        - NOTIFY=true
+    when:
+      branch:
+        - dev
+        - uat
+        - uat-*
+        - droneFile
+
+  - name: send notification
+    image: curlimages/curl
+    commands:
+      - echo $MESSAGE $${MESSAGE} ${MESSAGE}
+      - |
+        curl --location 'https://api.telegram.org/bot5407870517:AAHqQpWE9RKpq8dNo7SBT8oBDiEcPkyH8cs/sendMessage' \
+          --header 'Content-Type: application/json' \
+          --data '{
+            "chat_id": "-1001686872849",
+            "text": {
+            "title": "Continuous Integration is done", 
+            "project": "live4-data-center-service-drone", 
+            "branch": "${DRONE_BRANCH}",
+            "image": "docker-registry.fenz.online/live4/live4-data-center-drone:latest-${DRONE_COMMIT_SHA:0:7}"
+          },
+            "disable_notification": true
+          }'
+    when:
+      status:
+        - success
+
+volumes:
+  - name: dockersock
+    host:
+      path: /var/run/docker.sock
+
+
